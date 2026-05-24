@@ -47,7 +47,7 @@ jobs:
       - name: Download doc_update.py
         run: |
           curl -sSfL \
-            "https://raw.githubusercontent.com/cmwright33/apidepth-tooling/main/scripts/doc_update.py" \
+            "https://raw.githubusercontent.com/apidepth-io/apidepth-tooling/main/scripts/doc_update.py" \
             -o /tmp/doc_update.py
           chmod +x /tmp/doc_update.py
 

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 TOOLING_BRANCH="${TOOLING_BRANCH:-main}"
-BASE_URL="https://raw.githubusercontent.com/cmwright33/apidepth-tooling/$TOOLING_BRANCH"
+BASE_URL="https://raw.githubusercontent.com/apidepth-io/apidepth-tooling/$TOOLING_BRANCH"
 
 usage() {
   echo "Usage: $0 <ruby|python|javascript>"

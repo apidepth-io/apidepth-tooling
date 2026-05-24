@@ -27,7 +27,7 @@ scripts/
 Run from the root of the new repo:
 
 ```bash
-bash <(curl -sSfL https://raw.githubusercontent.com/cmwright33/apidepth-tooling/main/scripts/setup-repo.sh) ruby
+bash <(curl -sSfL https://raw.githubusercontent.com/apidepth-io/apidepth-tooling/main/scripts/setup-repo.sh) ruby
 # or: python | javascript
 ```
 
@@ -49,7 +49,7 @@ on:
     branches: [main]
 jobs:
   lint:
-    uses: cmwright33/apidepth-tooling/.github/workflows/lint-ruby.yml@main
+    uses: apidepth-io/apidepth-tooling/.github/workflows/lint-ruby.yml@main
     with:
       ruby-version: "3.2"
 ```
@@ -64,7 +64,7 @@ on:
     branches: [main]
 jobs:
   lint:
-    uses: cmwright33/apidepth-tooling/.github/workflows/lint-python.yml@main
+    uses: apidepth-io/apidepth-tooling/.github/workflows/lint-python.yml@main
 ```
 
 **JavaScript/TypeScript:**
@@ -77,7 +77,7 @@ on:
     branches: [main]
 jobs:
   lint:
-    uses: cmwright33/apidepth-tooling/.github/workflows/lint-javascript.yml@main
+    uses: apidepth-io/apidepth-tooling/.github/workflows/lint-javascript.yml@main
 ```
 
 ### 3. Copy the base linter config (if not already present)
