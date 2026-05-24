@@ -28,3 +28,14 @@ jobs:
 
       - name: Run npm audit
         run: npm audit --audit-level=${{ inputs.audit-level }}
+
+  semgrep:
+    name: SAST
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run semgrep
+        run: semgrep scan --config p/javascript --error .
