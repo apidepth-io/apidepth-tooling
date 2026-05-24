@@ -7,14 +7,14 @@ on:
         required: false
         type: string
         default: "20"
-      min-coverage:
+      coverage-script:
         required: false
-        type: number
-        default: 80
+        type: string
+        default: "test:coverage"
 
 jobs:
   coverage:
-    name: Jest coverage
+    name: Vitest Coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,8 +26,5 @@ jobs:
 
       - run: npm ci
 
-      - name: Run tests with coverage
-        run: |
-          npx jest \
-            --coverage \
-            --coverageThreshold='{"global":{"lines":${{ inputs.min-coverage }},"branches":${{ inputs.min-coverage }},"functions":${{ inputs.min-coverage }}}}'
+      - name: Run coverage
+        run: npm run ${{ inputs.coverage-script }}
