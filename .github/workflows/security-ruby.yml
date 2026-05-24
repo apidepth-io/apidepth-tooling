@@ -1,0 +1,50 @@
+name: Security - Ruby
+
+on:
+  workflow_call:
+    inputs:
+      ruby-version:
+        required: false
+        type: string
+        default: "3.2"
+      run-brakeman:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  bundler-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+
+      - run: gem install bundler-audit
+
+      - name: Update advisory database
+        run: bundle-audit update
+
+      - name: Run bundler-audit
+        run: bundle-audit check
+
+  brakeman:
+    name: SAST
+    if: ${{ inputs.run-brakeman }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+
+      - run: gem install brakeman
+
+      - name: Run brakeman
+        run: brakeman --no-pager -q

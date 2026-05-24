@@ -1,0 +1,52 @@
+name: Security - Python
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: false
+        type: string
+        default: "3.12"
+      bandit-exclude:
+        required: false
+        type: string
+        default: ".venv,venv"
+
+jobs:
+  pip-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: "pip"
+
+      - name: Install pip-audit and project dependencies
+        run: |
+          pip install pip-audit
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          elif [ -f pyproject.toml ] || [ -f setup.py ]; then
+            pip install . 2>/dev/null || true
+          fi
+
+      - name: Run pip-audit
+        run: pip-audit
+
+  bandit:
+    name: SAST
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - run: pip install bandit
+
+      - name: Run bandit
+        run: bandit -r . -ll -ii --exclude "${{ inputs.bandit-exclude }}"

@@ -1,0 +1,33 @@
+name: Coverage - JavaScript/TypeScript
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        required: false
+        type: string
+        default: "20"
+      min-coverage:
+        required: false
+        type: number
+        default: 80
+
+jobs:
+  coverage:
+    name: Jest coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Run tests with coverage
+        run: |
+          npx jest \
+            --coverage \
+            --coverageThreshold='{"global":{"lines":${{ inputs.min-coverage }},"branches":${{ inputs.min-coverage }},"functions":${{ inputs.min-coverage }}}}'
