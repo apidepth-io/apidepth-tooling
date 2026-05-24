@@ -4,22 +4,8 @@ on:
   workflow_call:
     inputs:
       docs:
-        description: "Space-separated list of doc files to check (e.g. README.md CLAUDE.md)"
         required: true
         type: string
-      python-version:
-        required: false
-        type: string
-        default: "3.12"
-      model:
-        required: false
-        type: string
-        default: "claude-sonnet-4-6"
-      diff-depth:
-        description: "Number of commits to diff (default 1 = HEAD^ vs HEAD)"
-        required: false
-        type: string
-        default: "1"
     secrets:
       ANTHROPIC_API_KEY:
         required: true
@@ -27,5 +13,7 @@ on:
 jobs:
   doc-update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - run: echo "ok"
