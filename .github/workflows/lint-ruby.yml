@@ -1,0 +1,24 @@
+name: Lint Ruby
+
+on:
+  workflow_call:
+    inputs:
+      ruby-version:
+        required: false
+        type: string
+        default: "3.2"
+
+jobs:
+  rubocop:
+    name: RuboCop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+
+      - name: RuboCop
+        run: bundle exec rubocop --parallel

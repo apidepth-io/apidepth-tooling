@@ -1,0 +1,26 @@
+name: Lint Python
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: false
+        type: string
+        default: "3.12"
+
+jobs:
+  ruff:
+    name: Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: "check --output-format=github"
+          version: ">=0.4"
+
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
+          version: ">=0.4"
