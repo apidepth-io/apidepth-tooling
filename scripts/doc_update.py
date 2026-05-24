@@ -134,7 +134,6 @@ def update_doc(client: anthropic.Anthropic, diff: str, doc_path: str, model: str
         max_tokens=8192,
         system=SYSTEM_PROMPT,
         messages=messages,
-        betas=["prompt-caching-2024-07-31"],
     )
 
     text = response.content[0].text.strip()
