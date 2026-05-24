@@ -1,0 +1,30 @@
+name: Security - JavaScript/TypeScript
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        required: false
+        type: string
+        default: "20"
+      audit-level:
+        required: false
+        type: string
+        default: "high"
+
+jobs:
+  npm-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=${{ inputs.audit-level }}
