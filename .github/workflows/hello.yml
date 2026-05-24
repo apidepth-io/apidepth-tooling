@@ -2,9 +2,17 @@ name: Hello
 
 on:
   workflow_call:
+    inputs:
+      docs:
+        description: "Space-separated list of doc files"
+        required: true
+        type: string
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
 
 jobs:
   hello:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "hello from apidepth-tooling"
+      - run: echo "docs=${{ inputs.docs }}"
