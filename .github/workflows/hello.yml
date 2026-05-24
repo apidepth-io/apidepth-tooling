@@ -26,10 +26,6 @@ on:
 
 jobs:
   doc-update:
-    name: AI doc update
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - run: echo "ok"
