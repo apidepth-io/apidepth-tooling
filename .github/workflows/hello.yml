@@ -3,16 +3,13 @@ name: Hello
 on:
   workflow_call:
     inputs:
-      docs:
-        description: "Space-separated list of doc files"
-        required: true
+      diff-depth:
+        required: false
         type: string
-    secrets:
-      ANTHROPIC_API_KEY:
-        required: true
+        default: "1"
 
 jobs:
   hello:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "docs=${{ inputs.docs }}"
+      - run: echo "depth=${{ inputs.diff-depth }}"
