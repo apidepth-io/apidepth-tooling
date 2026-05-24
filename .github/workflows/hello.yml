@@ -1,4 +1,4 @@
-name: Doc Update
+name: Hello
 
 on:
   workflow_call:
@@ -31,70 +31,5 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ inputs.python-version }}
-
-      - name: Install anthropic SDK
-        run: pip install anthropic
-
-      - name: Download doc_update.py
-        run: |
-          curl -sSfL \
-            "https://raw.githubusercontent.com/apidepth-io/apidepth-tooling/main/scripts/doc_update.py" \
-            -o /tmp/doc_update.py
-          chmod +x /tmp/doc_update.py
-
-      - name: Run doc update
-        id: update
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          DOC_UPDATE_MODEL: ${{ inputs.model }}
-          CODE_DIFF_DEPTH: ${{ inputs.diff-depth }}
-        run: |
-          set +e
-          python /tmp/doc_update.py ${{ inputs.docs }}
-          EXIT=$?
-          set -e
-          if [ $EXIT -eq 2 ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          elif [ $EXIT -eq 0 ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            exit $EXIT
-          fi
-
-      - name: Open draft PR with doc updates
-        if: steps.update.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          BRANCH="docs/auto-update-$(date +%Y%m%d-%H%M%S)"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH"
-          git add ${{ inputs.docs }}
-          git commit -m "docs: AI-suggested updates for $(git rev-parse --short HEAD^)"
-          git push origin "$BRANCH"
-          gh pr create \
-            --draft \
-            --title "docs: suggested updates from $(git rev-parse --short HEAD^)" \
-            --body "$(cat <<'EOF'
-          ## AI-suggested doc updates
-
-          This draft PR was opened automatically after a push to \`main\`.
-          The changes were suggested by Claude based on the code diff in the triggering commit.
-
-          **Please review carefully before merging** — AI suggestions may be incomplete or incorrect.
-
-          Triggered by: ${{ github.sha }}
-          EOF
-          )" \
-            --base main \
-            --head "$BRANCH"
+      - run: echo "ok"
