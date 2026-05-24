@@ -19,6 +19,10 @@ on:
         required: false
         type: string
         default: ""
+      install-extras:
+        required: false
+        type: string
+        default: "test"
 
 jobs:
   coverage:
@@ -42,7 +46,7 @@ jobs:
           elif [ -f requirements.txt ]; then
             pip install -r requirements.txt
           elif [ -f pyproject.toml ] || [ -f setup.py ]; then
-            pip install -e ".[test]" 2>/dev/null || pip install -e . 2>/dev/null || true
+            pip install -e ".[${{ inputs.install-extras }}]" 2>/dev/null || pip install -e . 2>/dev/null || true
           fi
 
       - name: Run tests with coverage
