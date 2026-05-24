@@ -1,0 +1,43 @@
+name: Coverage - Ruby
+
+on:
+  workflow_call:
+    inputs:
+      ruby-version:
+        required: false
+        type: string
+        default: "3.2"
+      min-coverage:
+        required: false
+        type: number
+        default: 80
+
+jobs:
+  coverage:
+    name: RSpec coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+
+      - name: Run tests
+        run: bundle exec rspec
+        env:
+          COVERAGE: "true"
+
+      - name: Enforce coverage threshold
+        run: |
+          ruby - <<'RUBY'
+          require 'json'
+          report = 'coverage/.last_run.json'
+          abort "No coverage report at #{report}. Add simplecov to spec_helper.rb." unless File.exist?(report)
+          coverage = JSON.parse(File.read(report)).dig('result', 'line').to_f
+          min = ${{ inputs.min-coverage }}.to_f
+          puts "Line coverage: #{coverage.round(2)}%"
+          abort "Coverage #{coverage.round(2)}% is below minimum #{min}%" if coverage < min
+          puts "Coverage OK (>= #{min}%)"
+          RUBY

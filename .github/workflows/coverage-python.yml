@@ -1,0 +1,54 @@
+name: Coverage - Python
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: false
+        type: string
+        default: "3.12"
+      min-coverage:
+        required: false
+        type: number
+        default: 80
+      source:
+        required: false
+        type: string
+        default: "."
+      requirements-file:
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  coverage:
+    name: pytest coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-cov
+          if [ -n "${{ inputs.requirements-file }}" ]; then
+            pip install -r "${{ inputs.requirements-file }}"
+          elif [ -f requirements-dev.txt ]; then
+            pip install -r requirements-dev.txt
+          elif [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          elif [ -f pyproject.toml ] || [ -f setup.py ]; then
+            pip install -e ".[test]" 2>/dev/null || pip install -e . 2>/dev/null || true
+          fi
+
+      - name: Run tests with coverage
+        run: |
+          pytest \
+            --cov=${{ inputs.source }} \
+            --cov-fail-under=${{ inputs.min-coverage }} \
+            --cov-report=term-missing \
+            --cov-report=xml
