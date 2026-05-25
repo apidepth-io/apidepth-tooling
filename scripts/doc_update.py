@@ -79,11 +79,16 @@ Rules:
 - Do not rewrite or improve sections that are still accurate.
 - Do not add new sections unless the diff introduces a genuinely new concept \
   that is missing from the docs.
-- If the diff does not affect any content in the document, reply with exactly \
-  the string: NO_UPDATE_NEEDED
-- Otherwise, reply with the complete updated document content and nothing else \
-  (no code fences, no explanation, no preamble).\
+- If the diff does not affect any content in the document, your response must \
+  be the single word: NO_UPDATE_NEEDED — no reasoning, no explanation, nothing else.
+- If an update is needed, your response must be the complete updated document \
+  and nothing else (no code fences, no explanation, no preamble). Begin \
+  immediately with the first character of the document.\
 """
+
+# Minimum ratio of updated content length vs original before we refuse to write.
+# Protects against the model returning reasoning text instead of a full document.
+MIN_LENGTH_RATIO = 0.5
 
 
 def update_doc(client: anthropic.Anthropic, diff: str, doc_path: str, model: str) -> str | None:
@@ -137,8 +142,26 @@ def update_doc(client: anthropic.Anthropic, diff: str, doc_path: str, model: str
     )
 
     text = response.content[0].text.strip()
-    if text == "NO_UPDATE_NEEDED":
+
+    # Robust NO_UPDATE_NEEDED detection: accept it as the full response or as
+    # the final line (guards against the model prepending reasoning text).
+    if text == "NO_UPDATE_NEEDED" or text.split("\n")[-1].strip() == "NO_UPDATE_NEEDED":
         return None
+
+    # Safety net: refuse to overwrite a document with content that is less than
+    # MIN_LENGTH_RATIO of the original. If the model returned reasoning instead
+    # of a document, this prevents silently nuking the file.
+    if len(current_content) > 0:
+        ratio = len(text) / len(current_content)
+        if ratio < MIN_LENGTH_RATIO:
+            print(
+                f"  WARNING: proposed update for {doc_path} is only "
+                f"{ratio:.0%} the length of the original — skipping to avoid "
+                f"data loss. Review the model response manually.",
+                file=sys.stderr,
+            )
+            return None
+
     return text
 
 
