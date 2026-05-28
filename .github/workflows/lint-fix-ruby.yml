@@ -1,0 +1,57 @@
+name: Lint Fix Ruby
+
+# Reusable workflow — apply RuboCop auto-corrections and commit them back to
+# the PR branch. Intended to be called from consumer repos on pull_request
+# events.
+#
+# Flow:
+#   1. rubocop -A  — applies all safe auto-corrections in-place
+#   2. git-auto-commit — commits any changes back to the PR branch
+#
+# After this workflow commits, the regular lint-ruby check workflow is
+# re-triggered by the synchronize event and should pass cleanly.
+# If RuboCop cannot auto-correct an offense (e.g. a real style violation that
+# requires judgment), the check workflow surfaces it as a failure.
+
+on:
+  workflow_call:
+    inputs:
+      ruby-version:
+        required: false
+        type: string
+        default: "3.2"
+
+jobs:
+  rubocop-fix:
+    name: RuboCop Auto-fix
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # required to push the auto-fix commit back to the branch
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Check out the PR head branch so we can push fixes back to it.
+          # Without this, actions/checkout defaults to a detached HEAD at the
+          # merge commit and the auto-commit push has no target branch.
+          ref: ${{ github.head_ref }}
+          token: ${{ github.token }}
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+
+      # -A applies all safe auto-corrections in-place.
+      # continue-on-error: true so unfixable offenses don't block the commit —
+      # the check workflow will surface them as failures.
+      - name: RuboCop Auto-correct
+        run: bundle exec rubocop -A --parallel
+        continue-on-error: true
+
+      # Commit any changes RuboCop made back to the PR branch.
+      # No-ops silently when nothing changed.
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: auto-fix RuboCop offenses"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"

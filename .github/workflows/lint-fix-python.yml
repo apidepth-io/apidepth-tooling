@@ -1,0 +1,59 @@
+name: Lint Fix Python
+
+# Reusable workflow — apply ruff auto-fixes and commit them back to the PR
+# branch. Intended to be called from consumer repos on pull_request events.
+#
+# Flow:
+#   1. ruff check --fix   — fixes all auto-correctable lint issues in-place
+#   2. ruff format        — applies opinionated formatting in-place
+#   3. git-auto-commit    — commits any changes back to the PR branch
+#
+# After this workflow commits, the regular lint-python check workflow is
+# re-triggered by the synchronize event and should pass cleanly.
+# If ruff cannot auto-fix an issue (e.g. a real logic error), it exits
+# non-zero, the workflow fails, and the developer must fix it manually.
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: false
+        type: string
+        default: "3.12"
+
+jobs:
+  ruff-fix:
+    name: Ruff Auto-fix
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # required to push the auto-fix commit back to the branch
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Check out the PR head branch so we can push fixes back to it.
+          # Without this, actions/checkout defaults to a detached HEAD at the
+          # merge commit and the auto-commit push has no target branch.
+          ref: ${{ github.head_ref }}
+          token: ${{ github.token }}
+
+      # Apply all auto-fixable lint issues in-place.
+      # Exits non-zero if any unfixable issues remain — the workflow fails so
+      # the developer knows manual intervention is needed.
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: "check --fix --output-format=github"
+          version: ">=0.4"
+
+      # Apply opinionated formatting in-place (always exits 0).
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: "format"
+          version: ">=0.4"
+
+      # Commit any changes ruff made back to the PR branch.
+      # No-ops silently when nothing changed (push_options and skip-dirty).
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: auto-fix ruff lint and format"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
