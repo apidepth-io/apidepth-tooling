@@ -11,6 +11,10 @@ on:
         required: false
         type: string
         default: "test:coverage"
+      min-coverage:
+        required: false
+        type: number
+        default: 80
 
 jobs:
   coverage:
@@ -28,3 +32,24 @@ jobs:
 
       - name: Run coverage
         run: npm run ${{ inputs.coverage-script }}
+
+      - name: Enforce coverage threshold
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const file = 'coverage/coverage-summary.json';
+          if (!fs.existsSync(file)) {
+            console.log('No coverage/coverage-summary.json found — skipping threshold check.');
+            console.log('Add json-summary to your coverage reporters to enable enforcement.');
+            process.exit(0);
+          }
+          const summary = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const pct = summary.total.lines.pct;
+          const min = ${{ inputs.min-coverage }};
+          console.log(`Line coverage: ${pct}%`);
+          if (pct < min) {
+            console.error(`Coverage ${pct}% is below minimum ${min}%`);
+            process.exit(1);
+          }
+          console.log(`Coverage OK (>= ${min}%)`);
+          EOF
