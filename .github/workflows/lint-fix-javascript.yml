@@ -30,7 +30,7 @@ jobs:
       contents: write  # required to push the auto-fix commit back to the branch
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # Check out the PR head branch so we can push fixes back to it.
           # Without this, actions/checkout defaults to a detached HEAD at the
